@@ -1,0 +1,78 @@
+version: '3.9'
+
+services:
+
+  frontend:
+    image: node:20-alpine
+    volumes:
+      - ./frontend:/app
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host
+    networks:
+      - domain-monitor
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - frontend
+    networks:
+      - domain-monitor
+
+  php:
+    build:
+      context: ./docker/php
+    volumes:
+      - ./backend:/var/www
+    networks:
+      - domain-monitor
+
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: domain_monitor
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+    networks:
+      - domain-monitor
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - domain-monitor
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+    networks:
+      - domain-monitor
+
+  worker:
+    build:
+      context: ./docker/php
+    volumes:
+      - ./backend:/var/www
+    command: php artisan queue:work
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - domain-monitor
+
+networks:
+  domain-monitor:

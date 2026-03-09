@@ -1,0 +1,4 @@
+docker/mysql/data/
+*.sock
+node_modules/
+.env
