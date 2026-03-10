@@ -6,9 +6,11 @@ services:
     image: node:20-alpine
     volumes:
       - ./frontend:/app
+      - /app/node_modules
     working_dir: /app
     ports:
       - "5173:5173"
+#    command: tail -f /dev/null
     command: npm run dev -- --host
     networks:
       - domain-monitor
@@ -31,6 +33,7 @@ services:
       context: ./docker/php
     volumes:
       - ./backend:/var/www
+      - /var/www/vendor
     networks:
       - domain-monitor
 
@@ -67,6 +70,7 @@ services:
       context: ./docker/php
     volumes:
       - ./backend:/var/www
+      - /var/www/vendor
     command: php artisan queue:work
     depends_on:
       - mysql

@@ -1,22 +1,53 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import {ref, onMounted} from 'vue';
 import api from '../api/axios';
-import { useRouter } from 'vue-router';
+import {useRouter} from 'vue-router';
 import locale from '../locales/ru.ts'
-import { LayoutDashboard, Plus, Trash2, History, ExternalLink } from 'lucide-vue-next';
+import {LayoutDashboard, Plus, Trash2, Edit, History, ExternalLink, User} from 'lucide-vue-next';
 
 const domains = ref([]);
 const router = useRouter();
+const user = ref<{ name: string; email: string } | null>(null);
 const newDomain = ref({
   name: '',
   check_interval: 1,
   timeout: 10
 });
 const l = locale
+const editingId = ref<number | null>(null);
+const editForm = ref({name: '', check_interval: 1, timeout: 10});
+
+const fetchUser = async () => {
+  try {
+    const {data} = await api.get('/user');
+    user.value = data;
+  } catch (e) {
+    console.error('Ошибка загрузки профиля');
+  }
+};
+const startEdit = (domain: any) => {
+  editingId.value = domain.id;
+  editForm.value = {...domain};
+};
+
+const cancelEdit = () => {
+  editingId.value = null;
+};
+
+const updateDomain = async () => {
+  if (!editingId.value) return;
+  try {
+    await api.put(`/domains/${editingId.value}`, editForm.value);
+    editingId.value = null;
+    await fetchDomains();
+  } catch (e: any) {
+    alert(e.response?.data?.message || l.errors.errUpdate || 'Ошибка при обновлении');
+  }
+};
 
 const fetchDomains = async () => {
   try {
-    const { data } = await api.get('/domains');
+    const {data} = await api.get('/domains');
     domains.value = data;
   } catch (e) {
     console.error(l.errors.errLoad);
@@ -26,7 +57,7 @@ const fetchDomains = async () => {
 const addDomain = async () => {
   try {
     await api.post('/domains', newDomain.value);
-    newDomain.value = { name: '', check_interval: 1, timeout: 10 };
+    newDomain.value = {name: '', check_interval: 1, timeout: 10};
     await fetchDomains();
   } catch (e: any) {
     alert(e.response?.data?.message || l.errors.errAdd);
@@ -46,7 +77,10 @@ const handleLogout = () => {
   router.push('/login');
 };
 
-onMounted(fetchDomains);
+onMounted(() => {
+  fetchDomains();
+  fetchUser();
+});
 </script>
 
 <template>
@@ -55,13 +89,20 @@ onMounted(fetchDomains);
       <header class="header">
         <h1>
           <LayoutDashboard size="22"/>
-          <span v-text="l.domains.title"></span>
+          <span v-text="l.titles.head"></span>
         </h1>
-        <button
+        <div class="header-actions">
+          <User size="18" class="user-icon" />
+          <span
+            v-if="user"
+            class="user-info"
+            v-text="user.name">
+          </span>
+          <button
             class="logout"
             @click="handleLogout"
-            v-text="l.auth.logout">
-        </button>
+            v-text="l.auth.logout"/>
+        </div>
       </header>
 
       <section class="card">
@@ -119,35 +160,66 @@ onMounted(fetchDomains);
             <th v-text="l.domains.table.actions"/>
           </tr>
           </thead>
+
           <tbody>
-
           <tr v-for="domain in domains" :key="domain.id">
-
             <td class="domain">
-              <span v-text="domain.name"></span>
-              <a :href="domain.name" target="_blank">
-                <ExternalLink size="14" />
-              </a>
+              <template v-if="editingId === domain.id">
+                <input v-model="editForm.name" type="url" class="small-input"/>
+              </template>
+              <template v-else>
+                <span v-text="domain.name"></span>
+                <a :href="domain.name" target="_blank">
+                  <ExternalLink size="14"/>
+                </a>
+              </template>
             </td>
-            <td class="settings" v-text="`${domain.check_interval} ${l.domains.interval} / ${domain.timeout} ${l.domains.timeout}`"></td>
+
+            <td class="settings">
+              <template v-if="editingId === domain.id">
+                <div class="edit-group">
+                  <input v-model="editForm.check_interval" type="number" title="Интервал"/>
+                  <input v-model="editForm.timeout" type="number" title="Таймаут"/>
+                </div>
+              </template>
+              <template v-else>
+                <span
+                    v-text="`${domain.check_interval} ${l.domains.interval} / ${domain.timeout} ${l.domains.timeout}`"></span>
+              </template>
+            </td>
 
             <td class="actions">
-              <button class="link" @click="router.push(`/domains/${domain.id}/checks`)">
-                <History size="16" />
-                <span v-text="l.domains.table.history"></span>
-              </button>
-
-              <button class="danger" @click="deleteDomain(domain.id)">
-                <Trash2 size="18" />
-              </button>
+              <template v-if="editingId === domain.id">
+                <button
+                    class="primary small"
+                    @click="updateDomain"
+                    v-text="l.domains.ok"
+                />
+                <button
+                    class="link small"
+                    @click="cancelEdit"
+                    v-text="l.domains.cancel"
+                />
+              </template>
+              <template v-else>
+                <button class="link" @click="startEdit(domain)">
+                  <Edit size="16"/>
+                </button>
+                <button class="link" @click="router.push(`/domains/${domain.id}/checks`)">
+                  <History size="16"/>
+                </button>
+                <button class="danger" @click="deleteDomain(domain.id)">
+                  <Trash2 size="18"/>
+                </button>
+              </template>
             </td>
-
           </tr>
 
           <tr v-if="domains.length === 0">
             <td colspan="3" class="empty" v-text="l.domains.table.empty"></td>
           </tr>
           </tbody>
+
         </table>
       </section>
     </div>
@@ -174,9 +246,8 @@ onMounted(fetchDomains);
   height: 200%;
   top: -50%;
   left: -50%;
-  background:
-      radial-gradient(circle at 30% 30%, #312e81, transparent 40%),
-      radial-gradient(circle at 70% 70%, #1e1b4b, transparent 40%);
+  background: radial-gradient(circle at 30% 30%, #312e81, transparent 40%),
+  radial-gradient(circle at 70% 70%, #1e1b4b, transparent 40%);
   filter: blur(120px);
   opacity: 0.6;
   z-index: 0;
@@ -184,8 +255,12 @@ onMounted(fetchDomains);
 }
 
 @keyframes moveGradient {
-  from { transform: translate(-5%, -5%) }
-  to { transform: translate(5%, 5%) }
+  from {
+    transform: translate(-5%, -5%)
+  }
+  to {
+    transform: translate(5%, 5%)
+  }
 }
 
 .container {
@@ -210,6 +285,25 @@ onMounted(fetchDomains);
   align-items: center;
   gap: 12px;
   font-weight: 700;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.user-icon {
+  opacity: 0.8;
 }
 
 /* Glass Card */
@@ -300,7 +394,9 @@ onMounted(fetchDomains);
   transition: 0.3s;
 }
 
-.domain a:hover { opacity: 1; }
+.domain a:hover {
+  opacity: 1;
+}
 
 .settings {
   color: #999;
@@ -353,7 +449,11 @@ button {
   font-size: 14px;
 }
 
-.logout:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+.logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
 
 .link {
   background: rgba(99, 102, 241, 0.1);
@@ -364,7 +464,9 @@ button {
   font-size: 13px;
 }
 
-.link:hover { background: rgba(99, 102, 241, 0.2); }
+.link:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
 
 .danger {
   background: rgba(239, 68, 68, 0.1);
@@ -374,5 +476,7 @@ button {
   border-radius: 8px;
 }
 
-.danger:hover { background: rgba(239, 68, 68, 0.2); }
+.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
 </style>

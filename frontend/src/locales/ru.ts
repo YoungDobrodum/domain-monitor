@@ -27,6 +27,8 @@ export default {
     domains: {
         title: 'Мониторинг доменов',
         addBtn: 'Добавить',
+        ok: 'ОК',
+        cancel: 'Отмена',
         refreshBtn: 'Обновить',
         addDomain: 'Добавить домен',
         urlLabel: 'URL (с https://)',
