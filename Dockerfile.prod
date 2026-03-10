@@ -1,34 +1,26 @@
 FROM dunglas/frankenphp:1-php8.3
 
-# 1. Системные зависимости
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libzip-dev libpng-dev libonig-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Установка расширений PHP
 RUN install-php-extensions pdo_mysql mbstring zip exif pcntl gd bcmath
 
-# 3. Настройка Composer и копирование кода
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 COPY ./backend .
 
-# 4. Установка зависимостей Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# 5. Права доступа (критично для Laravel)
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# 6. Настройки PHP для продакшена
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# 7. Подготовка скрипта запуска
 COPY ./backend/start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
 # 8. Порт и запуск
 EXPOSE 80
 
-# Используем скрипт, чтобы запустить и сервер, и воркеры
 CMD ["/usr/local/bin/start.sh"]
