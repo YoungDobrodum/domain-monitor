@@ -11,7 +11,9 @@ export default {
         passwordConf: 'Пароли не совпадают',
         err: 'Ошибка операции',
         errLoad: 'Ошибка загрузки',
-        errAdd: 'Ошибка при добавлении'
+        errAdd: 'Ошибка при добавлении',
+        errUpdate: 'Ошибка при обновлении',
+        errProfile: 'Ошибка загрузки профиля'
     },
     auth: {
         login: 'Войти',
@@ -34,6 +36,8 @@ export default {
         urlLabel: 'URL (с https://)',
         interval: 'Интервал (мин)',
         timeout: 'Таймаут (сек)',
+        min: '(мин)',
+        sec: '(сек)',
         table: {
             name: 'Домен',
             settings: 'Настройки',

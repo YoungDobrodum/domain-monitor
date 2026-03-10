@@ -30,6 +30,8 @@ class UpdateDomainRequest extends FormRequest
                 'url',
                 Rule::unique('domains', 'name')->ignore($domainId),
             ],
+            'timeout'        => 'required|integer|min:1|max:60',
+            'check_interval' => 'required|integer|min:1|max:1440'
         ];
     }
 }

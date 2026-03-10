@@ -82,30 +82,30 @@ const handleSubmit = async () => {
 
       <form @submit.prevent="handleSubmit">
         <div
-            v-if="!isLogin"
-            class="input">
+          v-if="!isLogin"
+          class="input">
           <input
-              v-model="name"
-              type="text"
-              required
+            v-model="name"
+            type="text"
+            required
           />
           <span v-text="t.name"></span>
         </div>
 
         <div class="input">
           <input
-              v-model="email"
-              type="email"
-              required
+            v-model="email"
+            type="email"
+            required
           />
           <span v-text="t.email"></span>
         </div>
 
         <div class="input">
           <input
-              v-model="password"
-              type="password"
-              required
+            v-model="password"
+            type="password"
+            required
           />
           <span v-text="t.password"></span>
         </div>
@@ -113,22 +113,23 @@ const handleSubmit = async () => {
         <div
             v-if="!isLogin"
             class="input">
-          <input v-model="password_confirmation"
-                 type="password"
-                 required
+          <input
+            v-model="password_confirmation"
+            type="password"
+            required
           />
           <span v-text="t.password"></span>
         </div>
 
         <button
-            type="submit"
-            v-text="isLogin ? t.login : t.register">
-        </button>
+          type="submit"
+          v-text="isLogin ? t.login : t.register"
+        />
       </form>
       <p
-          class="toggle-text"
-          @click="isLogin = !isLogin"
-          v-text="isLogin ? t.noAccount : t.hasAccount">
+        class="toggle-text"
+        @click="isLogin = !isLogin"
+        v-text="isLogin ? t.noAccount : t.hasAccount">
       </p>
     </div>
   </div>
@@ -146,8 +147,6 @@ const handleSubmit = async () => {
   background: #050505;
   font-family: Inter, system-ui;
 }
-
-/* animated gradient */
 
 .gradient-bg {
   position: absolute;
@@ -167,8 +166,6 @@ const handleSubmit = async () => {
     transform: translate(10%, 10%)
   }
 }
-
-/* glow orbs */
 
 .glow {
   position: absolute;
@@ -211,8 +208,6 @@ const handleSubmit = async () => {
   }
 }
 
-/* login card */
-
 .login-card {
   position: relative;
   z-index: 2;
@@ -232,8 +227,6 @@ const handleSubmit = async () => {
   transform: translateY(-6px);
 }
 
-/* title */
-
 .login-card h1 {
   color: white;
   font-size: 30px;
@@ -247,8 +240,6 @@ const handleSubmit = async () => {
   font-size: 14px;
   margin-bottom: 35px;
 }
-
-/* inputs */
 
 .input {
   position: relative;
@@ -291,8 +282,6 @@ const handleSubmit = async () => {
   padding: 0 6px;
   color: #aaa;
 }
-
-/* button */
 
 button {
   width: 100%;

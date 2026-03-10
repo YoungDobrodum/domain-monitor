@@ -12,9 +12,9 @@ class Domain extends Model
 
     protected $fillable = [
         'name',
-        'user_id',
         'timeout',
-        'check_interval'
+        'check_interval',
+        'user_id',
     ];
 
     public function user(): BelongsTo {

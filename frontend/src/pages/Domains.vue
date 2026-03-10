@@ -22,7 +22,7 @@ const fetchUser = async () => {
     const {data} = await api.get('/user');
     user.value = data;
   } catch (e) {
-    console.error('Ошибка загрузки профиля');
+    console.error(l.errors.errProfile);
   }
 };
 const startEdit = (domain: any) => {
@@ -36,12 +36,17 @@ const cancelEdit = () => {
 
 const updateDomain = async () => {
   if (!editingId.value) return;
+  const payload = {
+    name: editForm.value.name,
+    check_interval: editForm.value.check_interval,
+    timeout: editForm.value.timeout
+  }
   try {
-    await api.put(`/domains/${editingId.value}`, editForm.value);
+    await api.put(`/domains/${editingId.value}`, payload);
     editingId.value = null;
     await fetchDomains();
   } catch (e: any) {
-    alert(e.response?.data?.message || l.errors.errUpdate || 'Ошибка при обновлении');
+    alert(e.response?.data?.message || l.errors.errUpdate);
   }
 };
 
@@ -81,6 +86,7 @@ onMounted(() => {
   fetchDomains();
   fetchUser();
 });
+
 </script>
 
 <template>
@@ -106,23 +112,23 @@ onMounted(() => {
       </header>
 
       <section class="card">
+
         <h2 class="section-title">
           <Plus size="18"/>
           <span v-text="l.domains.addDomain"></span>
         </h2>
 
         <form
-            @submit.prevent="addDomain"
-            class="form-grid"
-        >
+          @submit.prevent="addDomain"
+          class="form-grid">
 
           <div class="input">
             <label v-text="l.domains.urlLabel"/>
             <input
-                v-model="newDomain.name"
-                type="url"
-                :placeholder="l.placeholders.url"
-                required
+              v-model="newDomain.name"
+              type="url"
+              :placeholder="l.placeholders.url"
+              required
             />
           </div>
 
@@ -144,15 +150,16 @@ onMounted(() => {
             />
           </div>
           <button
-              class="primary"
-              v-text="l.domains.addBtn"
+            class="primary"
+            v-text="l.domains.addBtn"
           />
         </form>
+
       </section>
 
       <section class="card">
-        <table class="table">
 
+        <table class="table">
           <thead>
           <tr>
             <th v-text="l.domains.table.name"/>
@@ -165,7 +172,11 @@ onMounted(() => {
           <tr v-for="domain in domains" :key="domain.id">
             <td class="domain">
               <template v-if="editingId === domain.id">
-                <input v-model="editForm.name" type="url" class="small-input"/>
+                <input
+                  v-model="editForm.name"
+                  type="url"
+                  class="small-input"
+                />
               </template>
               <template v-else>
                 <span v-text="domain.name"></span>
@@ -178,27 +189,36 @@ onMounted(() => {
             <td class="settings">
               <template v-if="editingId === domain.id">
                 <div class="edit-group">
-                  <input v-model="editForm.check_interval" type="number" title="Интервал"/>
-                  <input v-model="editForm.timeout" type="number" title="Таймаут"/>
+                  <input
+                    v-model="editForm.check_interval"
+                    type="number"
+                    title="Интервал"
+                  />
+                  <input
+                    v-model="editForm.timeout"
+                    type="number"
+                    title="Таймаут"
+                  />
                 </div>
               </template>
               <template v-else>
                 <span
-                    v-text="`${domain.check_interval} ${l.domains.interval} / ${domain.timeout} ${l.domains.timeout}`"></span>
+                  v-text="`${domain.check_interval} ${l.domains.min} / ${domain.timeout} ${l.domains.sec}`">
+                </span>
               </template>
             </td>
 
             <td class="actions">
               <template v-if="editingId === domain.id">
                 <button
-                    class="primary small"
-                    @click="updateDomain"
-                    v-text="l.domains.ok"
+                  class="primary small"
+                  @click="updateDomain"
+                  v-text="l.domains.ok"
                 />
                 <button
-                    class="link small"
-                    @click="cancelEdit"
-                    v-text="l.domains.cancel"
+                  class="link small"
+                  @click="cancelEdit"
+                  v-text="l.domains.cancel"
                 />
               </template>
               <template v-else>
@@ -216,7 +236,10 @@ onMounted(() => {
           </tr>
 
           <tr v-if="domains.length === 0">
-            <td colspan="3" class="empty" v-text="l.domains.table.empty"></td>
+            <td
+              colspan="3"
+              class="empty"
+              v-text="l.domains.table.empty"/>
           </tr>
           </tbody>
 
@@ -271,7 +294,6 @@ onMounted(() => {
   padding: 40px 20px;
 }
 
-/* Header */
 .header {
   display: flex;
   justify-content: space-between;
@@ -306,7 +328,6 @@ onMounted(() => {
   opacity: 0.8;
 }
 
-/* Glass Card */
 .card {
   background: rgba(20, 20, 20, 0.6);
   backdrop-filter: blur(20px);
@@ -361,7 +382,6 @@ onMounted(() => {
   box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
 }
 
-/* Table */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -478,5 +498,44 @@ button {
 
 .danger:hover {
   background: rgba(239, 68, 68, 0.2);
+}
+
+.small-input {
+  background: #0b0b0b;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: white;
+  font-size: 14px;
+  width: 100%;
+  transition: all 0.3s;
+}
+
+.small-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.15);
+}
+
+.edit-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.edit-group input {
+  width: 80px;
+  background: #0b0b0b;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 8px;
+  color: white;
+  text-align: center;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 </style>
