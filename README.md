@@ -98,8 +98,11 @@ docker/
    php
    mysql
 
-docker-compose.yml
+.gitignore
+Dockerfile.frontend
+Dockerfile.prod
 README.md
+docker-compose.yml
 ```
 
 ---
@@ -178,6 +181,15 @@ After the project is started locally:
 | Frontend Application     | http://localhost:5173 |
 | Backend API              | http://localhost:8080 |
 | Database Admin (Adminer) | http://localhost:8081 |
+
+---
+# 🖥️ Live Demo URL
+
+Production Deployment
+
+| Service        | URL                   |
+|----------------| --------------------- |
+| Domain Monitor | https://domain-monitor-frontend-production.up.railway.app |
 
 ---
 
@@ -259,6 +271,7 @@ Possible future features:
 * Domain grouping
 * SSL certificate monitoring
 * Public monitoring API
+* WebSockets
 
 ---
 
