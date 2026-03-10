@@ -7,7 +7,7 @@ import { ArrowLeft, RefreshCcw, CheckCircle, XCircle } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
-const checks = ref([]);
+const checks = ref<any[]>([]);
 const domainId = route.params.id;
 const l = locale;
 
@@ -31,14 +31,14 @@ onMounted(fetchHistory);
       <header class="header">
         <div class="brand">
           <button @click="router.push('/domains')" class="back-btn">
-            <ArrowLeft size="20" />
+            <ArrowLeft :size="20" />
           </button>
           <h1>
             <span v-text="l.checks.title"></span>
           </h1>
         </div>
         <button @click="fetchHistory" class="refresh-btn">
-          <RefreshCcw size="18" />
+          <RefreshCcw :size="18" />
           <span v-text="l.domains.refreshBtn"></span>
         </button>
       </header>
@@ -57,8 +57,8 @@ onMounted(fetchHistory);
           <tbody>
           <tr v-for="check in checks" :key="check.id">
             <td>
-              <CheckCircle v-if="check.is_healthy" class="icon-healthy" size="20" />
-              <XCircle v-else class="icon-down" size="20" />
+              <CheckCircle v-if="check.is_healthy" class="icon-healthy" :size="20" />
+              <XCircle v-else class="icon-down" :size="20" />
             </td>
             <td>
               <span class="code-badge" v-text="check.status_code || '—'"></span>

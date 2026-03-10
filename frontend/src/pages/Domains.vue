@@ -5,7 +5,7 @@ import {useRouter} from 'vue-router';
 import locale from '../locales/ru.ts'
 import {LayoutDashboard, Plus, Trash2, Edit, History, ExternalLink, User} from 'lucide-vue-next';
 
-const domains = ref([]);
+const domains = ref<any[]>([]);
 const router = useRouter();
 const user = ref<{ name: string; email: string } | null>(null);
 const newDomain = ref({
@@ -94,11 +94,11 @@ onMounted(() => {
     <div class="container">
       <header class="header">
         <h1>
-          <LayoutDashboard size="22"/>
+          <LayoutDashboard :size="22"/>
           <span v-text="l.titles.head"></span>
         </h1>
         <div class="header-actions">
-          <User size="18" class="user-icon" />
+          <User :size="18" class="user-icon" />
           <span
             v-if="user"
             class="user-info"
@@ -114,7 +114,7 @@ onMounted(() => {
       <section class="card">
 
         <h2 class="section-title">
-          <Plus size="18"/>
+          <Plus :size="18"/>
           <span v-text="l.domains.addDomain"></span>
         </h2>
 
@@ -181,7 +181,7 @@ onMounted(() => {
               <template v-else>
                 <span v-text="domain.name"></span>
                 <a :href="domain.name" target="_blank">
-                  <ExternalLink size="14"/>
+                  <ExternalLink :size="14"/>
                 </a>
               </template>
             </td>
@@ -223,13 +223,13 @@ onMounted(() => {
               </template>
               <template v-else>
                 <button class="link" @click="startEdit(domain)">
-                  <Edit size="16"/>
+                  <Edit :size="16"/>
                 </button>
                 <button class="link" @click="router.push(`/domains/${domain.id}/checks`)">
-                  <History size="16"/>
+                  <History :size="16"/>
                 </button>
                 <button class="danger" @click="deleteDomain(domain.id)">
-                  <Trash2 size="18"/>
+                  <Trash2 :size="18"/>
                 </button>
               </template>
             </td>
