@@ -1,23 +1,25 @@
-FROM php:8.3-apache
+FROM dunglas/frankenphp:1-php8.3
 
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libzip-dev libpng-dev libonig-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl gd
+RUN install-php-extensions pdo_mysql mbstring zip exif pcntl gd bcmath
 
-RUN sed -ri -e 's!/var/www/html!/var/www/public!g' /etc/apache2/sites-available/*.conf
-RUN a2enmod rewrite
-
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-WORKDIR /var/www
+WORKDIR /app
 COPY ./backend .
 
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
 RUN chown -R www-data:www-data storage bootstrap/cache
 
+ENV PHP_INI_SCAN_DIR=":/usr/local/etc/php/conf.d"
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+ENV SERVER_NAME=:80
+ENV FRANKENPHP_CONFIG="root /app/public"
+
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
